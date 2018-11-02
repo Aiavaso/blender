@@ -1,44 +1,71 @@
 import bge
 import operator
-from functools import reduce
+cimport libcpp
 
 class LogicNodeRoot(bge.types.LOG_Node):
 	def start(self):
-		print(type(self), self.inputs, self.outputs, self.properties)
+		pass
 
 	def update(self):
 		return self.outputs["Trigger Out"]
 
 class LogicNodeBooleanValue(bge.types.LOG_FunctionNode):
 	def start(self):
-		print(type(self), self.inputs, self.properties)
+		pass
 
 	def get(self):
 		return bool(self.properties[0])
 
+cdef libcpp.bool reduce_and(values):
+	cdef libcpp.bool res = 0
+
+	cdef int val
+	for val in values:
+		res &= val;
+
+	return res > 0
+
+cdef libcpp.bool reduce_or(values):
+	cdef libcpp.bool res = 0
+
+	cdef int val
+	for val in values:
+		res |= val;
+
+	return res > 0
+
+cdef libcpp.bool reduce_xor(values):
+	cdef libcpp.bool res = 0
+
+	cdef int val
+	for val in values:
+		res ^= val;
+
+	return res
+
 class LogicNodeBooleanOperator(bge.types.LOG_FunctionNode):
 	def start(self):
-		print(type(self), self.inputs, self.properties)
+		pass
 
 	def get(self):
-		mode = self.properties["mode"]
+		cdef int mode = self.properties["mode"]
 
 		if mode == 0:
-			return reduce(operator.and_, self.inputs)
+			return reduce_and(self.inputs)
 		if mode == 1:
-			return not reduce(operator.and_, self.inputs)
+			return not reduce_and(self.inputs)
 		if mode == 2:
-			return reduce(operator.or_, self.inputs)
+			return reduce_or(self.inputs)
 		if mode == 3:
-			return not reduce(operator.or_, self.inputs)
+			return not reduce_or(self.inputs)
 		if mode == 3:
-			return reduce(operator.xor_, self.inputs)
+			return reduce_xor(self.inputs)
 		if mode == 3:
-			return not reduce(operator.xor_, self.inputs)
+			return not reduce_xor(self.inputs)
 
 class LogicNodeBranch(bge.types.LOG_Node):
 	def start(self):
-		print(type(self), self.inputs, self.outputs, self.properties)
+		pass
 
 	def update(self):
 		val = self.inputs["value"]
@@ -47,7 +74,7 @@ class LogicNodeBranch(bge.types.LOG_Node):
 
 class LogicNodeBasicMotion(bge.types.LOG_Node):
 	def start(self):
-		print(type(self), self.inputs, self.outputs, self.properties)
+		pass
 
 	def update(self):
 		trans = self.inputs["translation"]
@@ -64,10 +91,10 @@ class LogicNodeBasicMotion(bge.types.LOG_Node):
 
 class LogicNodeMathOperator(bge.types.LOG_FunctionNode):
 	def start(self):
-		print(type(self), self.inputs, self.properties)
+		pass
 
 	def get(self):
-		mode = self.properties["mode"]
+		cdef int mode = self.properties["mode"]
 		a = self.inputs["a"]
 		b = self.inputs["b"]
 
